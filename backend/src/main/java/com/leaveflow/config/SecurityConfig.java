@@ -1,5 +1,6 @@
 package com.leaveflow.config;
 
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import com.leaveflow.security.CustomUserDetailsService;
 import com.leaveflow.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
@@ -40,8 +41,7 @@ public class SecurityConfig {
             "/api/v1/auth/**",
             "/v3/api-docs/**",
             "/swagger-ui/**",
-            "/swagger-ui.html",
-            "/actuator/health"
+            "/swagger-ui.html"
     };
 
     @Bean
@@ -51,10 +51,11 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(eh -> eh.authenticationEntryPoint(restAuthenticationEntryPoint))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .anyRequest().authenticated()
-                )
+               .authorizeHttpRequests(auth -> auth
+        .requestMatchers(EndpointRequest.to("health")).permitAll()
+        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+        .anyRequest().authenticated()
+)
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

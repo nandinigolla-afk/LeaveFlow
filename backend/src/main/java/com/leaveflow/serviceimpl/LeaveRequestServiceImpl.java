@@ -175,12 +175,13 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         writeAudit(leaveRequest, newStatus == LeaveStatus.APPROVED ? "APPROVED" : "REJECTED",
                 reviewer, previousStatus, newStatus, request.getComment());
 
-        userRepository.findByEmployeeId(leaveRequest.getEmployee().getId()).ifPresent(user ->
-                notificationService.notify(user.getId(),
-                        newStatus == LeaveStatus.APPROVED ? NotificationType.LEAVE_APPROVED : NotificationType.LEAVE_REJECTED,
-                        "Leave request " + newStatus.name().toLowerCase(),
-                        "Your " + leaveRequest.getLeaveType().getName() + " request was " + newStatus.name().toLowerCase() + " by " + reviewer.getFullName(),
-                        "/leave-requests/" + leaveRequest.getId()));
+        final LeaveRequest reviewedRequest = leaveRequest;
+userRepository.findByEmployeeId(reviewedRequest.getEmployee().getId()).ifPresent(user ->
+        notificationService.notify(user.getId(),
+                newStatus == LeaveStatus.APPROVED ? NotificationType.LEAVE_APPROVED : NotificationType.LEAVE_REJECTED,
+                "Leave request " + newStatus.name().toLowerCase(),
+                "Your " + reviewedRequest.getLeaveType().getName() + " request was " + newStatus.name().toLowerCase() + " by " + reviewer.getFullName(),
+                "/leave-requests/" + reviewedRequest.getId()));
 
         return leaveRequestMapper.toResponse(leaveRequest);
     }

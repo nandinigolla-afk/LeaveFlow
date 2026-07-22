@@ -1,19 +1,23 @@
--- Convert PostgreSQL native enum columns to VARCHAR + CHECK constraints.
--- Hibernate's @Enumerated(EnumType.STRING) writes plain VARCHAR over JDBC,
--- which Postgres refuses to implicitly cast into a native enum column.
-
 ALTER TABLE roles
     ALTER COLUMN name TYPE VARCHAR(20) USING name::text;
 ALTER TABLE roles
     ADD CONSTRAINT chk_roles_name CHECK (name IN ('ADMIN', 'MANAGER', 'EMPLOYEE'));
 
 ALTER TABLE employees
+    ALTER COLUMN status DROP DEFAULT;
+ALTER TABLE employees
     ALTER COLUMN status TYPE VARCHAR(20) USING status::text;
+ALTER TABLE employees
+    ALTER COLUMN status SET DEFAULT 'ACTIVE';
 ALTER TABLE employees
     ADD CONSTRAINT chk_employees_status CHECK (status IN ('ACTIVE', 'INACTIVE', 'ON_LEAVE', 'TERMINATED'));
 
 ALTER TABLE leave_requests
+    ALTER COLUMN status DROP DEFAULT;
+ALTER TABLE leave_requests
     ALTER COLUMN status TYPE VARCHAR(20) USING status::text;
+ALTER TABLE leave_requests
+    ALTER COLUMN status SET DEFAULT 'PENDING';
 ALTER TABLE leave_requests
     ADD CONSTRAINT chk_leave_requests_status CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED'));
 
@@ -31,7 +35,6 @@ ALTER TABLE notifications
 ALTER TABLE notifications
     ADD CONSTRAINT chk_notifications_type CHECK (type IN ('LEAVE_REQUEST', 'LEAVE_APPROVED', 'LEAVE_REJECTED', 'LEAVE_CANCELLED', 'SYSTEM'));
 
--- The native enum types are no longer referenced by any column — safe to drop.
 DROP TYPE role_name;
 DROP TYPE employee_status;
 DROP TYPE leave_status;
